@@ -1,0 +1,153 @@
+<!doctype html>
+<html>
+  <head>
+    <title>Socket.IO chat</title>
+    <style>
+      * { margin: 0; padding: 0; box-sizing: border-box; }
+      body { font: 13px Helvetica, Arial; }
+      form { background: #000; padding: 3px; position: fixed; bottom: 0; width: 100%; }
+      form input { border: 0; padding: 10px; width: 90%; margin-right: .5%; }
+      form button { width: 9%; background: rgb(130, 224, 255); border: none; padding: 10px; }
+      #messages { list-style-type: none; margin: 0; padding: 0; }
+      #messages li { padding: 5px 10px; }
+      #messages li:nth-child(odd) { background: #eee; }
+      #messages { margin-bottom: 40px; }
+	  #quantity{display:none;}
+	  
+	  
+    </style>
+  </head>
+  <body>
+    <ul id="messages"></ul>
+	
+	
+    <form action="">
+	  <input type="hidden" name="user" id="user">
+	  
+	 
+      <input id="m" autocomplete="off" /><button>Send</button>
+    </form>
+    <script src="https://cdn.socket.io/socket.io-1.2.0.js"></script>
+    <script src="https://code.jquery.com/jquery-1.11.1.js"></script>
+	
+    <script>
+	var socket = io();
+      $(function () {
+        
+        $('form').submit(function(){
+		  var from = $('#user').val();
+          socket.emit('chat message', $('#m').val(),from);
+          $('#m').val('');
+          return false;
+        });
+		
+        socket.on('chat message', function(msg,user){
+		  if(user != $('#user').val())
+		  {
+           $('#messages').append($('<li>').text( user.concat(' : ').concat(msg) ));
+		   console.log('Two');
+		  }
+		  else
+		  {
+		   $('#messages').append($('<li>').text( ('You : ').concat(msg) ));
+		  }
+          window.scrollTo(0, document.body.scrollHeight);
+        });
+		
+		socket.on('newUser', function(user){
+		 if(user != $('#user').val())
+		  {
+           $('#messages').append($('<li>').text( user.concat(' has joined the chat') ));
+		  }
+		  else
+		  {
+		   $('#messages').append($('<li>').text('You have joined the chat'));
+		  }
+		  
+		  
+          window.scrollTo(0, document.body.scrollHeight);
+        });
+		
+		
+		
+		var flag = true;
+		socket.on('realtime', function(msg,user,charCode){
+		
+		
+		
+		  if(user != $('#user').val())
+		  {
+			if(charCode!=13)
+			{
+				if(flag == true)
+				{
+				    if(msg!= '')
+					{
+					   $('#messages').append($('<li>').text( user.concat(' is typing ....').concat(msg) ));
+					  
+						flag=false;
+					   
+					}
+				}
+				else
+				{
+					if(msg!= '')
+					{
+			        $('li').last().text( user.concat(' is typing ....').concat(msg) );
+					
+					}
+				}
+		   }
+		   else
+		   { 
+		            flag = true;
+					$( "li:contains('is typing')" ).remove();
+				
+					
+		   }
+		 }
+		  
+		  
+          window.scrollTo(0, document.body.scrollHeight);
+        });
+		
+		
+		
+      });
+	  
+	  $(document).ready(function(){
+	    
+	   var name = makeid();
+	   var typing = false;
+	   $('#user').val(name);
+	   socket.emit('newUser',$('#user').val());
+	   
+	   
+	  
+	  });
+	  
+	  
+	  $('#m').keyup(function(evt) {
+	    var from = $('#user').val();
+		evt = evt || window.event;
+        var charCode = evt.keyCode || evt.which;
+        var charStr = String.fromCharCode(charCode);
+		var user = $('#user').val();
+		var msg = $('#m').val();
+		socket.emit('realtime',msg,user,charCode);
+	});
+	  function makeid()
+	{
+		var text = "";
+		var possible = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
+
+		for( var i=0; i < 5; i++ )
+        text += possible.charAt(Math.floor(Math.random() * possible.length));
+
+		return text;
+	}
+    </script>
+  </body>
+</html>
+   
+ 
