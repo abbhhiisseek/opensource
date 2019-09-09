@@ -21,6 +21,7 @@ io.on('connection', function(socket){
   socket.on('realtime', function(msg,user,charCode){
     io.emit('realtime', msg,user,charCode);
   });
+var2
   
 
 });
